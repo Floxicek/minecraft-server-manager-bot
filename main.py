@@ -6,7 +6,7 @@ import os, sleeper, crafty, platform
 load_dotenv()
 
 
-MY_GUILD = discord.Object(id=1301510250209345576)
+MY_GUILD = discord.Object(id=615248760766988311)
 idle_time_to_sleep = 10 # minutes
 should_sleep = False
 
