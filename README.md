@@ -54,6 +54,8 @@ To set up the project, follow these steps:
 
 ### Minecraft Server Manager Bot
 
+> **Note**: This script is made for **Python 3.13.0**. If you are using an older version, you will need to modify `requirements.txt`.
+
 1. **Clone the repository**:
 
    ```sh
