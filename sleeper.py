@@ -43,7 +43,7 @@ def _monitor_idle_time(idle_threshold):
 
             # Show popup and allow user to cancel
             user_cancelled = show_popup(
-                f"The computer has been idle for {idle_threshold} minutes. "
+                f"The computer has been idle for {idle_threshold} seconds. "
                 "It will shut down in 1 minute. Click 'Cancel' to abort."
             )
 
