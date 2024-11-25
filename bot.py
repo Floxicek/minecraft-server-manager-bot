@@ -3,14 +3,13 @@ from discord import app_commands
 from discord.ext import tasks
 import os
 from dotenv import load_dotenv
-
-from sleeper import start_monitoring, stop_monitoring, set_enabled
-
+import sleeper
+import crafty
 load_dotenv()
 
-import crafty
 
 MY_GUILD = discord.Object(id=1301510250209345576)
+idle_time_to_sleep = 10 # minutes
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -29,15 +28,14 @@ async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('─' * 20)
     change_status.start()
-    set_enabled(True)
-    start_monitoring(idle_threshold=600)
+    sleeper.start_monitoring(idle_time_to_sleep)
 
 
 
 @tasks.loop(seconds=10)
 async def change_status():
     if crafty.are_any_running:
-        stop_monitoring()
+        sleeper.stop_monitoring()
         running = crafty.get_running_info()
         if len(running) > 0:
             if len(running) > 1:
@@ -50,7 +48,7 @@ async def change_status():
         else:
             await client.change_presence(status=discord.Status.online)
     else:
-        set_enabled(True)
+        sleeper.start_monitoring(idle_time_to_sleep)
         await client.change_presence(status=discord.Status.online)
 
 @client.tree.command()
