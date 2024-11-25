@@ -57,7 +57,7 @@ async def change_status():
             sleeper.start_monitoring(idle_time_to_sleep)
         await client.change_presence(status=discord.Status.online)
 
-@client.tree.command()
+@client.tree.command(description="Control the minecraft server")
 @app_commands.describe(server='Server to control', action='action')
 @app_commands.choices(server=[
     app_commands.Choice(name=server["name"], value=server["server_id"]) for server in crafty.servers]
@@ -71,7 +71,7 @@ async def server(
     
     await interaction.response.send_message("Action send" if crafty.server_action(server.value, action.value) else "Failed to send action", ephemeral=True)
 
-@client.tree.command()
+@client.tree.command(description="Setup notifications for the minecraft server")
 @app_commands.default_permissions(administrator=True)
 @app_commands.describe(server="Which server to setup webhooks for", password="Password for the action")
 @app_commands.choices(server=[
@@ -84,7 +84,7 @@ async def webhooks_setup(interaction: discord.Interaction, server: app_commands.
     await crafty.config_webhook(server.value)
     await interaction.response.send_message("Setup done", ephemeral=True)
 
-@client.tree.command()
+@client.tree.command(description="Remove notifications for the minecraft server")
 @app_commands.default_permissions(administrator=True)
 @app_commands.describe(server="Which server to remove webhooks from", password="Password for the action")
 @app_commands.choices(server=[
