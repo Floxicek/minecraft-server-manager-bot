@@ -15,7 +15,7 @@ class ServerActions(Enum):
 
 
 load_dotenv()
-url = "https://192.168.0.227:8443/api/v2"
+url = "https://localhost:8443/api/v2"
 
 token = os.environ.get("CRAFTY_TOKEN")
 
@@ -66,9 +66,11 @@ def get_running_info():
     return running_servers
 
 def server_action(server_id, action):
-    if action == ServerActions.start_server:
+    global are_any_running
+    if action == "start_server":
+        print("Starting server")
         are_any_running = True
-    elif action != ServerActions.backup_server:
+    elif action != "backup_server":
         are_any_running = False
     # available actions: clone_server, start_server, stop_server, restart_server, kill_server, backup_server, update_executable
     status = post_req(url=f"{url}/servers/{server_id}/action/{action}").json()
