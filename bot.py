@@ -1,15 +1,18 @@
 import discord
 from discord import app_commands
 from discord.ext import tasks
-import os
 from dotenv import load_dotenv
-import sleeper
-import crafty
+import os, sleeper, crafty, platform
 load_dotenv()
 
 
 MY_GUILD = discord.Object(id=1301510250209345576)
 idle_time_to_sleep = 10 # minutes
+should_sleep = False
+
+
+if platform.system() == "Windows":
+    should_sleep = True # Sleep only works on windows
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -28,14 +31,16 @@ async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('─' * 20)
     change_status.start()
-    sleeper.start_monitoring(idle_time_to_sleep)
+    if should_sleep:
+        sleeper.start_monitoring(idle_time_to_sleep)
 
 
 
 @tasks.loop(seconds=10)
 async def change_status():
     if crafty.are_any_running:
-        sleeper.stop_monitoring()
+        if should_sleep:
+            sleeper.stop_monitoring()
         running = crafty.get_running_info()
         if len(running) > 0:
             if len(running) > 1:
@@ -48,7 +53,8 @@ async def change_status():
         else:
             await client.change_presence(status=discord.Status.online)
     else:
-        sleeper.start_monitoring(idle_time_to_sleep)
+        if should_sleep:
+            sleeper.start_monitoring(idle_time_to_sleep)
         await client.change_presence(status=discord.Status.online)
 
 @client.tree.command()
