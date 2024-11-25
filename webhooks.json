@@ -1,0 +1,38 @@
+[
+    {
+        "body": ":white_check_mark: ",
+        "bot_name": "VGangServerManager",
+        "color": "#3fd000",
+        "enabled": true,
+        "name": " has been started",
+        "trigger": ["start_server"],
+        "webhook_type": "Discord"
+    },
+    {
+        "body": ":fire: :fire_engine: \n",
+        "bot_name": "VGangServerManager",
+        "color": "#d00000",
+        "enabled": true,
+        "name": " crashed",
+        "trigger": ["crash_detected"],
+        "webhook_type": "Discord"
+    },
+    {
+        "body": "\n:leftwards_pushing_hand: ",
+        "bot_name": "VGangServerManager",
+        "color": "#d07800",
+        "enabled": true,
+        "name": " has been turned off",
+        "trigger": ["stop_server"],
+        "webhook_type": "Discord"
+    },
+    {
+        "body": "\n:alarm_clock: :white_check_mark: ",
+        "bot_name": "VGangServerManager",
+        "color": "#0bd000",
+        "enabled": true,
+        "name": " backed up",
+        "trigger": ["backup_server"],
+        "webhook_type": "Discord"
+    }
+]

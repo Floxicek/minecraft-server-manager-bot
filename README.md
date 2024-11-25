@@ -1,4 +1,5 @@
 ```.env
 DISCORD_TOKEN=
 CRAFTY_TOKEN=
+WEBHOOK_URL=
 ```

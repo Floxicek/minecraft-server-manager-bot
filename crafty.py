@@ -2,6 +2,7 @@ import requests
 from dotenv import load_dotenv
 import os
 from enum import Enum
+import json
 
 
 class ServerActions(Enum):
@@ -21,10 +22,11 @@ headers = {
     "Authorization": f"Bearer {token}"
 }
 
-def post_req(url):
+def post_req(url, body=None):
     try:
-        req = requests.post(url, headers=headers, verify=False)
+        req = requests.post(url, headers=headers, json=body, verify=False)
         req.raise_for_status()  # Raise an HTTPError for bad responses
+        print(req.json())
         return req
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
@@ -131,6 +133,26 @@ def get_server_stats(server_id):
             "max": data.get("max")
         }
     return None
+
+
+def config_webhook(server_id):
+    with open("webhooks.json", 'r') as file:
+        webhooks = json.load(file)
+    
+    for webhook in webhooks:
+        server_name = ""
+        for server in servers:
+            if server["server_id"] == server_id:
+                server_name = server["name"]
+        
+        webhook["name"] = server_name + webhook["name"]
+        webhook["url"] = os.environ.get("WEBHOOK_URL")
+        print(webhook)
+        post_req(f"{url}/servers/{server_id}/webhook", webhook)
+
+def get_webhooks(server_id):
+    response = get_req(f"{url}/servers/{server_id}/webhook")
+    return response.json()
 
 # print(server_action(servers[1]["server_id"], "start_server"))
 # print(get_req(f"{url}/servers/{servers[1]['server_id']}/stats"))
