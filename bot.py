@@ -46,7 +46,7 @@ async def change_status():
             else:
                 running_server = running[0]
                 print(running_server)
-                await client.change_presence(activity=discord.Game(f"Running {running_server["name"]} {running_server['online']}/{running_server['max']}"))
+                await client.change_presence(activity=discord.Game(f"Running {running_server['name']} {running_server['online']}/{running_server['max']}"))
         else:
             await client.change_presence(status=discord.Status.online)
     else:
