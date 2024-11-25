@@ -4,6 +4,8 @@ from discord.ext import tasks
 import os
 from dotenv import load_dotenv
 
+from sleeper import start_monitoring, stop_monitoring, set_enabled
+
 load_dotenv()
 
 import crafty
@@ -27,10 +29,15 @@ async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('─' * 20)
     change_status.start()
+    set_enabled(True)
+    start_monitoring(idle_threshold=600)
+
+
 
 @tasks.loop(seconds=10)
 async def change_status():
     if crafty.are_any_running:
+        stop_monitoring()
         running = crafty.get_running_info()
         if len(running) > 0:
             if len(running) > 1:
@@ -43,6 +50,7 @@ async def change_status():
         else:
             await client.change_presence(status=discord.Status.online)
     else:
+        set_enabled(True)
         await client.change_presence(status=discord.Status.online)
 
 @client.tree.command()
