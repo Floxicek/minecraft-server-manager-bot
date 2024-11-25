@@ -1,6 +1,3 @@
-from typing import Literal, Union, NamedTuple
-from enum import Enum
-
 import discord
 from discord import app_commands
 from discord.ext import tasks
@@ -62,5 +59,30 @@ async def server(
     
     await interaction.response.send_message("Action send" if crafty.server_action(server.value, action.value) else "Failed to send action", ephemeral=True)
 
+@client.tree.command()
+@app_commands.default_permissions(administrator=True)
+@app_commands.describe(server="Which server to setup webhooks for", password="Password for the action")
+@app_commands.choices(server=[
+    app_commands.Choice(name=server["name"], value=server["server_id"]) for server in crafty.servers]
+)
+async def webhooks_setup(interaction: discord.Interaction, server: app_commands.Choice[str], password: str):
+    if password != os.environ["SETUP_PASSWORD"]:
+        await interaction.response.send_message("Wrong password", ephemeral=True)
+        return
+    await crafty.config_webhook(server.value)
+    await interaction.response.send_message("Setup done", ephemeral=True)
+
+@client.tree.command()
+@app_commands.default_permissions(administrator=True)
+@app_commands.describe(server="Which server to remove webhooks from", password="Password for the action")
+@app_commands.choices(server=[
+    app_commands.Choice(name=server["name"], value=server["server_id"]) for server in crafty.servers]
+)
+async def webhooks_remove(interaction: discord.Interaction, server: app_commands.Choice[str], password: str):
+    if password != os.environ["SETUP_PASSWORD"]:
+        await interaction.response.send_message("Wrong password", ephemeral=True)
+        return
+    await crafty.remove_webhooks(server.value)
+    await interaction.response.send_message("Setup done", ephemeral=True)
 
 client.run(os.environ["DISCORD_TOKEN"])

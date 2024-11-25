@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 from enum import Enum
 import json
+import aiohttp
 
 
 class ServerActions(Enum):
@@ -26,7 +27,6 @@ def post_req(url, body=None):
     try:
         req = requests.post(url, headers=headers, json=body, verify=False)
         req.raise_for_status()  # Raise an HTTPError for bad responses
-        print(req.json())
         return req
     except requests.exceptions.RequestException as e:
         print(f"An error occurred: {e}")
@@ -135,24 +135,49 @@ def get_server_stats(server_id):
     return None
 
 
-def config_webhook(server_id):
-    with open("webhooks.json", 'r') as file:
-        webhooks = json.load(file)
-    
-    for webhook in webhooks:
-        server_name = ""
-        for server in servers:
-            if server["server_id"] == server_id:
-                server_name = server["name"]
+async def config_webhook(server_id):
+    async with aiohttp.ClientSession() as session:
+        with open("webhooks.json", 'r') as file:
+            webhooks = json.load(file)
         
-        webhook["name"] = server_name + webhook["name"]
-        webhook["url"] = os.environ.get("WEBHOOK_URL")
-        print(webhook)
-        post_req(f"{url}/servers/{server_id}/webhook", webhook)
+        for webhook in webhooks:
+            server_name = ""
+            for server in servers:
+                if server["server_id"] == server_id:
+                    server_name = server["name"]
+            
+            webhook["name"] = server_name + webhook["name"]
+            webhook["url"] = os.environ.get("WEBHOOK_URL")
+            print(webhook)
+            async with session.post(f"{url}/servers/{server_id}/webhook", headers=headers, json=webhook, ssl=False) as req:
+                resp = await req.json()
+                if resp["status"] == "ok":
+                    print(f"Configured webhook for server {server_id}")
+                else:
+                    print(f"Failed to configure webhook for server {server_id}: {resp}")
+        
+# def get_webhooks(server_id):
+#     response = get_req(f"{url}/servers/{server_id}/webhook")
+#     return response.json()
 
-def get_webhooks(server_id):
-    response = get_req(f"{url}/servers/{server_id}/webhook")
-    return response.json()
+async def remove_webhooks(server_id):
+    async with aiohttp.ClientSession() as session:
+        async with session.get(f"{url}/servers/{server_id}/webhook", headers=headers, ssl=False) as response:
+            response_json = await response.json()
+            if "data" in response_json:
+                webhooks = response_json["data"]
+                for webhook_id in webhooks:
+                    async with session.delete(f"{url}/servers/{server_id}/webhook/{webhook_id}", headers=headers, ssl=False) as delete_response:
+                        resp = await delete_response.json()
+                        if resp["status"] == "ok":
+                            print(f"Deleted webhook {webhook_id}")
+                        else:
+                            print(f"Failed to delete webhook {webhook_id}")
+
+
+
+
+# print(get_webhooks(servers[1]["server_id"]))
 
 # print(server_action(servers[1]["server_id"], "start_server"))
 # print(get_req(f"{url}/servers/{servers[1]['server_id']}/stats"))
