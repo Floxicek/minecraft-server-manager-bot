@@ -9,6 +9,8 @@ A Minecraft server manager that can be controlled by my friends on a Discord ser
 - [x] Multiple server management
 - [x] Windows auto-sleep management (disables auto-sleep in Windows)
 - [x] Display currently playing players as Discord bot status
+- [ ] Turn off the server when no one is online for x minutes
+   - [ ] Configurable using the Discord bot
 - [ ] Send commands to the Minecraft server using the bot
 - [ ] Minecraft server backup command
 
