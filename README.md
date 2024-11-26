@@ -108,13 +108,16 @@ To set up the project, follow these steps:
    ```
 
 ## Images
+
+### Commands
 ![Commands](images/image.png)
 
-Select server from the menu
-![alt text](images/image-1.png)
+### Select Server from the Menu
+Automatically fetched from CraftyControl
+![Select Server from the Menu](images/image-1.png)
 
-Showing options for server
-![Showing options for server](images/image-2.png)
+### Showing Options for Server Actions
+![Showing Options for Server Actions](images/image-2.png)
 
 ## Fix Certificate Error
 
