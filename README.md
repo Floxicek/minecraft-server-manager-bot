@@ -105,6 +105,15 @@ To set up the project, follow these steps:
    python main.py
    ```
 
+## Images
+![Commands](images/image.png)
+
+Select server from the menu
+![alt text](images/image-1.png)
+
+Showing options for server
+![Showing options for server](images/image-2.png)
+
 ## Fix Certificate Error
 
 ## Temporary solution
