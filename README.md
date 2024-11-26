@@ -113,7 +113,8 @@ To set up the project, follow these steps:
 ![Commands](images/image.png)
 
 ### Select Server from the Menu
-Automatically fetched from CraftyControl
+> Automatically fetched from CraftyControl
+
 ![Select Server from the Menu](images/image-1.png)
 
 ### Showing Options for Server Actions
