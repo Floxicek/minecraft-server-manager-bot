@@ -10,7 +10,7 @@ A Minecraft server manager that can be controlled by my friends on a Discord ser
 - [x] Windows auto-sleep management (disables auto-sleep in Windows)
 - [x] Display currently playing players as Discord bot status
 - [ ] Turn off the server when no one is online for x minutes
-   - [ ] Configurable using the Discord bot
+  - [ ] Configurable using the Discord bot
 - [ ] Send commands to the Minecraft server using the bot
 - [ ] Minecraft server backup command
 
@@ -110,15 +110,18 @@ To set up the project, follow these steps:
 ## Images
 
 ### Commands
-![Commands](images/image.png)
+
+![Commands](docs/image.png)
 
 ### Select Server from the Menu
+
 > Automatically fetched from CraftyControl
 
-![Select Server from the Menu](images/image-1.png)
+![Select Server from the Menu](docs/image-1.png)
 
 ### Showing Options for Server Actions
-![Showing Options for Server Actions](images/image-2.png)
+
+![Showing Options for Server Actions](docs/image-2.png)
 
 ## Fix Certificate Error
 
