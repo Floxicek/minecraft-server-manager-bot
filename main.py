@@ -38,7 +38,7 @@ async def on_ready():
         crafty.are_any_running = True
 
 
-
+last_discord_activity = ""
 @tasks.loop(seconds=10)
 async def change_status():
     if crafty.are_any_running:
@@ -52,7 +52,9 @@ async def change_status():
             else:
                 running_server = running[0]
                 print(running_server)
-                await client.change_presence(activity=discord.Game(f"{running_server['online']}/{running_server['max']} {running_server['name']} - {running_server['version']}"))
+                activity = f"{running_server['online']}/{running_server['max']} {running_server['name']} - {running_server['version']}"
+                if activity != last_discord_activity:
+                    await client.change_presence(activity=discord.Game(last_discord_activity))
         else:
             await client.change_presence(status=discord.Status.online)
     else:

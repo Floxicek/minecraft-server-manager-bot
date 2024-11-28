@@ -63,7 +63,7 @@ def get_running_info():
         # print(stats)
         if stats and stats["running"]:
             running_servers.append(stats)
-            print(stats)
+            # print(stats)
     return running_servers
 
 def server_action(server_id, action):
