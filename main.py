@@ -2,12 +2,12 @@ import discord
 from discord import app_commands
 from discord.ext import tasks
 from dotenv import load_dotenv
+import config
 import os, sleeper, crafty, platform
 load_dotenv()
 
 
-MY_GUILD = discord.Object(id=615248760766988311)
-idle_time_to_sleep = 10 # minutes
+MY_GUILD = discord.Object(id=config.GUILD_ID)
 should_sleep = False
 
 
@@ -32,7 +32,7 @@ async def on_ready():
     print('─' * 20)
     change_status.start()
     if should_sleep:
-        sleeper.start_monitoring(idle_time_to_sleep)
+        sleeper.start_monitoring()
     running = crafty.get_running_servers()
     if len(running) > 0:
         crafty.are_any_running = True
@@ -51,7 +51,7 @@ async def change_status():
             await client.change_presence(status=discord.Status.online)
     else:
         if should_sleep:
-            sleeper.start_monitoring(idle_time_to_sleep)
+            sleeper.start_monitoring()
         await client.change_presence(status=discord.Status.online)
 
 @client.tree.command(description="Control the minecraft server")
@@ -93,5 +93,12 @@ async def webhooks_remove(interaction: discord.Interaction, server: app_commands
         return
     await crafty.remove_webhooks(server.value)
     await interaction.response.send_message("Setup done", ephemeral=True)
+
+@app_commands.command(description="Update servers")
+async def update_servers(interaction: discord.Interaction):
+    crafty.update_servers()
+    await interaction.response.send_message("Updating servers", ephemeral=True)
+
+
 
 client.run(os.environ["DISCORD_TOKEN"])

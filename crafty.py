@@ -2,8 +2,9 @@ import requests
 from dotenv import load_dotenv
 import os
 from enum import Enum
-import json, aiohttp, time
+import json, aiohttp
 from math import floor
+import config, idle_server_manager
 
 
 load_dotenv()
@@ -15,51 +16,37 @@ class ServerActions(Enum):
     backup_server = "backup_server"
 
 
-server_idle_stop_time = 60 # seconds
-special_idle_stop_time = 30 * 60 # seconds
-special_servers = ["ATM9"]
 
-servers_idle_time = {}
-last_run_time = time.time()
-debug_print = True
 def get_status():
-    global last_run_time
-    local_last_time = last_run_time
-    last_run_time = time.time()
+    # Update method called from the discord bot
     running = get_running_servers()
+    idle_servers = idle_server_manager.update_idle_servers(running)
+    if idle_servers:
+        for s in idle_servers:
+            server_action(s, ServerActions.stop_server.value)
     if len(running) > 0:
         if len(running) > 1:
             # SHOULD NOT HAPPEN
             servers = ", ".join(server["name"] for server in running)
             return f"{servers}"
         else:
+            # We have 1 server running
             running_server = running[0]
-            if debug_print:
+            if config.DEBUG_PRINT:
                 print(running_server)
             if running_server["starting"]:
                 return f"{running_server['name']} is starting"
             if running_server["online"] == 0 and not running_server["starting"]:
-                # There are not players online
-                if running_server['name'] in servers_idle_time:
-                    servers_idle_time[running_server['name']] += time.time() - local_last_time
-                    if debug_print:
-                        print(f"{running_server['name']} idle for {floor(servers_idle_time[running_server['name']])} seconds")
-                    
-                    if servers_idle_time[running_server['name']] > server_idle_stop_time:
-                            server_action(running_server["server_id"], ServerActions.stop_server.value)
-                            servers_idle_time.pop(running_server['name'])
-                            print(f"{running_server['name']} idle for {server_idle_stop_time} seconds, stopping server")                        
-                else:
-                    # init the idle time
-                    servers_idle_time[running_server['name']] = 0
-                    print("No online players")
+                # Server is online but no players                      
+                idle_server_manager.update_server_idle_time(running_server["server_id"], running_server["name"])
             else:
-                servers_idle_time.pop(running_server['name'], None)
-                
+                idle_server_manager.remove_server_idle_time(running_server["server_id"], running_server["name"])
+            
 
-
+            if running_server['version'] == False:
+                return f"{running_server['name']} is starting"
             return f"{running_server['online']}/{running_server['max']} {running_server['name']} - {running_server['version']}"
-    return "No servers running"
+    return ""
 
 
 url = "https://localhost:8443/api/v2"
@@ -97,21 +84,10 @@ def get_servers():
     for server in data:
         server_names.append({"name": server["server_name"], "server_id": server["server_id"], "port":server["server_port"]})
     return server_names
-    
-servers = get_servers()
-are_any_running = False
 
-
-
-def get_running_servers():
-    running_servers = []
-    for server in servers:
-        stats = get_server_stats(server["server_id"])
-        # print(stats)
-        if stats and (stats["running"] or stats["starting"]):
-            running_servers.append(stats)
-            # print(stats)
-    return running_servers
+def update_servers():
+    global servers
+    servers = get_servers()
 
 def server_action(server_id, action):
     global are_any_running
@@ -188,6 +164,25 @@ def get_server_stats(server_id):
         }
     return None
 
+
+def get_running_servers():
+    running_servers = []
+    for server in servers:
+        stats = get_server_stats(server["server_id"])
+        # print(stats)
+        if stats and (stats["running"] or stats["starting"]):
+            running_servers.append(stats)
+            # print(stats)
+    return running_servers
+
+servers = get_servers()
+are_any_running = len(get_running_servers()) > 0
+
+def get_server_name(server_id):
+    for server in servers:
+        if server["server_id"] == server_id:
+            return server["name"]
+    return None
 
 async def config_webhook(server_id):
     async with aiohttp.ClientSession() as session:

@@ -1,7 +1,7 @@
 import ctypes
-import time
 import os
 from threading import Thread, Event
+import config
 
 # Global control and state variables
 is_running = False
@@ -36,7 +36,7 @@ def _monitor_idle_time(idle_threshold):
     global is_running
     while is_running:
         idle_time = get_idle_time()
-        print(f"Idle time: {idle_time:.1f} seconds")
+        if config.DEBUG_PRINT: print(f"Idle time: {idle_time:.1f} seconds")
         if idle_time >= idle_threshold:
             # Schedule shutdown before showing the popup
             os.system("shutdown /s /t 60")  # Schedule shutdown in 60 seconds
@@ -56,7 +56,7 @@ def _monitor_idle_time(idle_threshold):
             break
 
 # Public functions to control the monitoring
-def start_monitoring(idle_minutes=10):
+def start_monitoring():
     """Start monitoring for idle time."""
     global is_running, _monitoring_thread, _stop_event
     if is_running:
@@ -64,7 +64,7 @@ def start_monitoring(idle_minutes=10):
 
     is_running = True
     _stop_event.clear()
-    idle_threshold = idle_minutes * 60  # Convert minutes to seconds
+    idle_threshold = config.IDLE_THRESHOLD_MINUTES * 60  # Convert minutes to seconds
 
     _monitoring_thread = Thread(target=_monitor_idle_time, args=(idle_threshold,))
     _monitoring_thread.daemon = True
