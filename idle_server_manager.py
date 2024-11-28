@@ -1,5 +1,7 @@
 from time import time
 import config
+from discord_webhook import DiscordWebhook, DiscordEmbed
+from os import environ
 
 servers_idle_from = {}
 last_run_time = time()
@@ -32,6 +34,7 @@ def update_idle_servers(running_servers):
         if current_time - idle_start_time > idle_time:
             del servers_idle_from[server]
             print(f"Server {server_name} is idle for {idle_time} seconds, stopping")
+            send_idle_webhook(server_name)
             idle_servers.append(server)
     
     last_run_time = current_time
@@ -46,3 +49,16 @@ def remove_server_idle_time(server, server_name):
     if server in servers_idle_from:
         print(f"Server {server_name} is no longer idle")
         del servers_idle_from[server]
+
+
+def send_idle_webhook(server):
+    if config.DEBUG_PRINT:
+        print(f"Sending idle webhook for {server}")
+    webhook = DiscordWebhook(url=environ["WEBHOOK_URL"])
+    embed = DiscordEmbed(title="Server Idle", description=f"Server {server} has been idle for {config.SERVERS_IDLE_STOP_TIME} seconds and will be stopped", color="CC4021")
+    embed.set_footer(text="ServerManager", icon_url="https://gitlab.com/uploads/-/system/project/avatar/29382408/Crafty_4-0_Logo_square.png")
+    embed.set_timestamp()
+    webhook.add_embed(embed)
+
+    response = webhook.execute()
+    print(response)
