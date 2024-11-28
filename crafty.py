@@ -2,10 +2,11 @@ import requests
 from dotenv import load_dotenv
 import os
 from enum import Enum
-import json
-import aiohttp
+import json, aiohttp, time
+from math import floor
 
 
+load_dotenv()
 class ServerActions(Enum):
     start_server = "start_server"
     stop_server = "stop_server"
@@ -14,7 +15,53 @@ class ServerActions(Enum):
     backup_server = "backup_server"
 
 
-load_dotenv()
+server_idle_stop_time = 60 # seconds
+special_idle_stop_time = 30 * 60 # seconds
+special_servers = ["ATM9"]
+
+servers_idle_time = {}
+last_run_time = time.time()
+debug_print = True
+def get_status():
+    global last_run_time
+    local_last_time = last_run_time
+    last_run_time = time.time()
+    running = get_running_servers()
+    if len(running) > 0:
+        if len(running) > 1:
+            # SHOULD NOT HAPPEN
+            servers = ", ".join(server["name"] for server in running)
+            return f"{servers}"
+        else:
+            running_server = running[0]
+            if debug_print:
+                print(running_server)
+            if running_server["starting"]:
+                return f"{running_server['name']} is starting"
+            if running_server["online"] == 0 and not running_server["starting"]:
+                # There are not players online
+                if running_server['name'] in servers_idle_time:
+                    servers_idle_time[running_server['name']] += time.time() - local_last_time
+                    if debug_print:
+                        print(f"{running_server['name']} idle for {floor(servers_idle_time[running_server['name']])} seconds")
+                    
+                    if servers_idle_time[running_server['name']] > server_idle_stop_time:
+                            server_action(running_server["server_id"], ServerActions.stop_server.value)
+                            servers_idle_time.pop(running_server['name'])
+                            print(f"{running_server['name']} idle for {server_idle_stop_time} seconds, stopping server")                        
+                else:
+                    # init the idle time
+                    servers_idle_time[running_server['name']] = 0
+                    print("No online players")
+            else:
+                servers_idle_time.pop(running_server['name'], None)
+                
+
+
+            return f"{running_server['online']}/{running_server['max']} {running_server['name']} - {running_server['version']}"
+    return "No servers running"
+
+
 url = "https://localhost:8443/api/v2"
 
 token = os.environ.get("CRAFTY_TOKEN")
@@ -56,12 +103,12 @@ are_any_running = False
 
 
 
-def get_running_info():
+def get_running_servers():
     running_servers = []
     for server in servers:
         stats = get_server_stats(server["server_id"])
         # print(stats)
-        if stats and stats["running"]:
+        if stats and (stats["running"] or stats["starting"]):
             running_servers.append(stats)
             # print(stats)
     return running_servers
@@ -69,7 +116,9 @@ def get_running_info():
 def server_action(server_id, action):
     global are_any_running
     if action == "start_server":
-        print("Starting server")
+        for server in servers:
+            if server["server_id"] == server_id:
+                print(f"Starting server {server['name']}")
         are_any_running = True
     elif action != "backup_server":
         are_any_running = False
@@ -130,10 +179,12 @@ def get_server_stats(server_id):
         data = response.json().get("data")
         return {
             "name": data["server_id"]["server_name"],
+            "server_id": data["server_id"]["server_id"],
             "running": data.get("running"),
             "online": data.get("online"),
             "max": data.get("max"),
-            "version": data.get("version")
+            "version": data.get("version"),
+            "starting": data.get("waiting_start") #or data.get("downloading") or data.get("updating")
         }
     return None
 

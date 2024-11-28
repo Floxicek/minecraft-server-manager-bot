@@ -33,7 +33,7 @@ async def on_ready():
     change_status.start()
     if should_sleep:
         sleeper.start_monitoring(idle_time_to_sleep)
-    running = crafty.get_running_info()
+    running = crafty.get_running_servers()
     if len(running) > 0:
         crafty.are_any_running = True
 
@@ -44,17 +44,9 @@ async def change_status():
     if crafty.are_any_running:
         if should_sleep:
             sleeper.stop_monitoring()
-        running = crafty.get_running_info()
-        if len(running) > 0:
-            if len(running) > 1:
-                servers = ", ".join(server["name"] for server in running)
-                await client.change_presence(activity=discord.Game(f"{servers}"))
-            else:
-                running_server = running[0]
-                print(running_server)
-                activity = f"{running_server['online']}/{running_server['max']} {running_server['name']} - {running_server['version']}"
-                if activity != last_discord_activity:
-                    await client.change_presence(activity=discord.Game(last_discord_activity))
+            activity = crafty.get_status()
+            if activity != last_discord_activity:
+                await client.change_presence(activity=discord.Game(activity))
         else:
             await client.change_presence(status=discord.Status.online)
     else:
