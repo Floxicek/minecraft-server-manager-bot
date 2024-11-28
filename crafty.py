@@ -132,7 +132,8 @@ def get_server_stats(server_id):
             "name": data["server_id"]["server_name"],
             "running": data.get("running"),
             "online": data.get("online"),
-            "max": data.get("max")
+            "max": data.get("max"),
+            "version": data.get("version")
         }
     return None
 
