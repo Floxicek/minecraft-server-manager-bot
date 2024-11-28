@@ -63,6 +63,7 @@ def get_running_info():
         # print(stats)
         if stats and stats["running"]:
             running_servers.append(stats)
+            print(stats)
     return running_servers
 
 def server_action(server_id, action):
@@ -127,7 +128,6 @@ def get_server_stats(server_id):
 # }
     if response:
         data = response.json().get("data")
-        # print(data)
         return {
             "name": data["server_id"]["server_name"],
             "running": data.get("running"),

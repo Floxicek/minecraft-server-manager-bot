@@ -33,6 +33,9 @@ async def on_ready():
     change_status.start()
     if should_sleep:
         sleeper.start_monitoring(idle_time_to_sleep)
+    running = crafty.get_running_info()
+    if len(running) > 0:
+        crafty.are_any_running = True
 
 
 
