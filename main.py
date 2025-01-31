@@ -4,15 +4,14 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 import config
 import os, sleeper, crafty, platform
+import keyboard, threading
 load_dotenv()
 
 
 MY_GUILD = discord.Object(id=config.GUILD_ID)
-should_sleep = False
+should_sleep = platform.system() == "Windows" # Sleep only works on windows
+sleep_enabled = should_sleep  # Initial state based on OS
 
-
-if platform.system() == "Windows":
-    should_sleep = True # Sleep only works on windows
 
 class MyClient(discord.Client):
     def __init__(self):
@@ -31,18 +30,20 @@ async def on_ready():
     print(f'Logged in as {client.user} (ID: {client.user.id})')
     print('─' * 20)
     change_status.start()
-    if should_sleep:
+    if should_sleep and sleep_enabled:
         sleeper.start_monitoring()
+        
     running = crafty.get_running_servers()
-    if len(running) > 0:
-        crafty.are_any_running = True
+    crafty.are_any_running = len(running) > 0
 
 
 last_discord_activity = ""
 @tasks.loop(seconds=10)
 async def change_status():
+    global sleep_enabled
+    
     if crafty.are_any_running:
-        if should_sleep:
+        if should_sleep and sleep_enabled:
             sleeper.stop_monitoring()
             activity = crafty.get_status()
             if activity != last_discord_activity:
@@ -50,7 +51,7 @@ async def change_status():
         else:
             await client.change_presence(status=discord.Status.online)
     else:
-        if should_sleep:
+        if should_sleep and sleep_enabled:
             sleeper.start_monitoring()
         await client.change_presence(status=discord.Status.online)
 
@@ -99,6 +100,17 @@ async def update_servers(interaction: discord.Interaction):
     crafty.update_servers()
     await interaction.response.send_message("Updating servers", ephemeral=True)
 
+def toggle_sleep():
+    global sleep_enabled
+    sleep_enabled = not sleep_enabled
+    print(f"Automatic sleep {'enabled' if sleep_enabled else 'disabled'}")
+
+def listen_for_keys():
+    keyboard.add_hotkey("s", toggle_sleep)
+    keyboard.wait()
+
+if should_sleep:
+    threading.Thread(target=listen_for_keys, daemon=True).start()
 
 
 client.run(os.environ["DISCORD_TOKEN"])
