@@ -7,7 +7,6 @@ import os, sleeper, crafty, platform
 import msvcrt, threading
 load_dotenv()
 
-
 MY_GUILD = discord.Object(id=config.GUILD_ID)
 should_sleep = platform.system() == "Windows" # Sleep only works on windows
 sleep_enabled = should_sleep  # Initial state based on OS
@@ -35,6 +34,8 @@ async def on_ready():
         
     running = crafty.get_running_servers()
     crafty.are_any_running = len(running) > 0
+    print("Press s to toggle automatic sleep mode, q to quit")
+
 
 
 last_discord_activity = ""
