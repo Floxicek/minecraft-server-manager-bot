@@ -2,7 +2,7 @@ DEBUG_PRINT = False
 
 GUILD_ID = 615248760766988311
 
-SERVERS_IDLE_STOP_TIME = 10 * 60 # seconds
+SERVERS_IDLE_STOP_TIME = 7 * 60 # seconds
 SPECIAL_IDLE_STOP_TIME = 30 * 60 # seconds
 SPECIAL_SERVERS = ["ATM9"] # ATM9 takes longer to start up
 
