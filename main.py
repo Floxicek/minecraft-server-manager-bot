@@ -4,7 +4,7 @@ from discord.ext import tasks
 from dotenv import load_dotenv
 import config
 import os, sleeper, crafty, platform
-import keyboard, threading
+import msvcrt, threading
 load_dotenv()
 
 
@@ -105,12 +105,19 @@ def toggle_sleep():
     sleep_enabled = not sleep_enabled
     print(f"Automatic sleep {'enabled' if sleep_enabled else 'disabled'}")
 
-def listen_for_keys():
-    keyboard.add_hotkey("s", toggle_sleep)
-    keyboard.wait()
+def listen_for_s():
+    global sleep_enabled
+    while True:
+        key = msvcrt.getch()  # Waits for a key press (console only)
+        if key.lower() == b's':  # Check if 's' key is pressed
+            sleep_enabled = not sleep_enabled
+            print(f"Automatic sleep {'enabled' if sleep_enabled else 'disabled'}")
+        elif key.lower() == b'q':  # Check if 'q' key is pressed
+            print(f"Stopping the bot")
+            os._exit(0)
 
 if should_sleep:
-    threading.Thread(target=listen_for_keys, daemon=True).start()
+    threading.Thread(target=listen_for_s, daemon=True).start()
 
 
 client.run(os.environ["DISCORD_TOKEN"])
